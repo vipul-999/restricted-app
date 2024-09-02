@@ -12,7 +12,7 @@ export default function HomePage({ isLoggedIn, visitCount, isCrawler }) {
     );
   }
 
-  if (!isLoggedIn && visitCount >= 5) {
+  if (!isLoggedIn && visitCount > 5) {
     return (
       <div className="container">
         <h1>Public Content</h1>
@@ -72,18 +72,16 @@ export async function getServerSideProps(context) {
     }
   }
 
-  // Increment visit count if not logged in
-  if (!isLoggedIn) {
+//   if (!isLoggedIn) {
     visitCount += 1;
 
-    // Store IP address and visit count in cookie
     res.setHeader('Set-Cookie', [
       cookie.serialize('visitData', JSON.stringify({ visitCount, ipAddress }), {
         maxAge: 60 * 60 * 24 * 365, // 1 year
         path: '/',
       }),
     ]);
-  }
+//   }
 
   // Detect if the request is coming from a Google crawler
   const userAgent = req.headers['user-agent'] || '';

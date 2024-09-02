@@ -10,7 +10,6 @@ export default function LoginButton() {
     localStorage.setItem('loggedIn', 'true');
     localStorage.setItem('visitCount', '0');
 
-    // Set cookies (optional, for better persistence)
     document.cookie = 'loggedIn=true; path=/';
     document.cookie = 'visitCount=0; path=/';
 
