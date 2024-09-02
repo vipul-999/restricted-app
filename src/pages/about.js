@@ -7,7 +7,7 @@ export default function HomePage({ isLoggedIn, visitCount, isCrawler }) {
     return (
       <div className="container">
         <h1>Public Content for Crawler</h1>
-        <p>This content is specifically served to Google crawlers for SEO purposes.</p>
+        <p>This content is specifically served to crawlers for security purposes.</p>
       </div>
     );
   }
@@ -56,38 +56,37 @@ function NavigationLinks() {
     );
   }
 
-  export async function getServerSideProps(context) {
-    const { req, res } = context;
-    const cookies = cookie.parse(req.headers.cookie || '');
-    let visitCount = 0;
-    let isLoggedIn = cookies.loggedIn === 'true';
-    let ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  
-    if (cookies.visitData) {
-      try {
-        const parsedData = JSON.parse(cookies.visitData);
-        visitCount = parsedData.visitCount;
-      } catch (e) {
-        // Handle parsing error
-      }
+export async function getServerSideProps(context) {
+  const { req, res } = context;
+  const cookies = cookie.parse(req.headers.cookie || '');
+  let visitCount = 0;
+  let isLoggedIn = cookies.loggedIn === 'true';
+  let ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  if (cookies.visitData) {
+    try {
+      const parsedData = JSON.parse(cookies.visitData);
+      visitCount = parsedData.visitCount;
+    } catch (e) {
+      // Handle parsing error
     }
-  
-  //   if (!isLoggedIn) {
-      visitCount += 1;
-      res.setHeader('Set-Cookie', [
-      cookie.serialize('visitData', JSON.stringify({ visitCount, ipAddress }), {
+  }
+
+    visitCount += 1;
+
+    res.setHeader('Set-Cookie', [
+        cookie.serialize('visitData', JSON.stringify({ visitCount, ipAddress }), {
         maxAge: 60 * 60 * 24 * 365, // 1 year
         path: '/',
-      }),
-      ]);
-  //   }
-  
-    // Detect if the request is coming from a Google crawler
-    const userAgent = req.headers['user-agent'] || '';
-    const isCrawler = /Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou/.test(userAgent);
-  
-    return {
-      props: { isLoggedIn, visitCount, isCrawler },
-    };
-  }
-  
+        }),
+    ]);
+
+  // Detect if the request is coming from a Google crawler
+  const userAgent = req.headers['user-agent'] || '';
+  const isKnownCrawler = /Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou/.test(userAgent);
+  const isCrawler = !isKnownCrawler && /bot|crawl|spider|scrap|curl|wget|http|python|ruby|php/i.test(userAgent);
+
+  return {
+    props: { isLoggedIn, visitCount, isCrawler },
+  };
+}

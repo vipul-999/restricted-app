@@ -1,16 +1,13 @@
-import LoginButton from "../components/LoginButton";
-import cookie from "cookie";
-import Link from "next/link";
+import LoginButton from '../components/LoginButton';
+import cookie from 'cookie';
+import Link from 'next/link';
 
 export default function HomePage({ isLoggedIn, visitCount, isCrawler }) {
   if (isCrawler) {
     return (
       <div className="container">
         <h1>Public Content for Crawler</h1>
-        <p>
-          This content is specifically served to Google crawlers for SEO
-          purposes.
-        </p>
+        <p>This content is specifically served to crawlers for security purposes.</p>
       </div>
     );
   }
@@ -19,10 +16,7 @@ export default function HomePage({ isLoggedIn, visitCount, isCrawler }) {
     return (
       <div className="container">
         <h1>Public Content</h1>
-        <p>
-          You have reached the visit limit. Please log in to continue accessing
-          more content.
-        </p>
+        <p>You have reached the visit limit. Please log in to continue accessing more content.</p>
         <LoginButton />
       </div>
     );
@@ -39,28 +33,28 @@ export default function HomePage({ isLoggedIn, visitCount, isCrawler }) {
 }
 
 function NavigationLinks() {
-  return (
-    <nav>
-      <ul>
-        <li>
-          <Link href="/">Home</Link>
-        </li>
-        <li>
-          <Link href="/about">About</Link>
-        </li>
-        <li>
-          <Link href="/services">Services</Link>
-        </li>
-        <li>
-          <Link href="/contact">Contact</Link>
-        </li>
-        <li>
-          <Link href="/profile">Profile</Link>
-        </li>
-      </ul>
-    </nav>
-  );
-}
+    return (
+      <nav>
+        <ul>
+          <li>
+            <Link href="/">Home</Link>
+          </li>
+          <li>
+            <Link href="/about">About</Link>
+          </li>
+          <li>
+            <Link href="/services">Services</Link>
+          </li>
+          <li>
+            <Link href="/contact">Contact</Link>
+          </li>
+          <li>
+            <Link href="/profile">Profile</Link>
+          </li>
+        </ul>
+      </nav>
+    );
+  }
 
 export async function getServerSideProps(context) {
   const { req, res } = context;
@@ -78,20 +72,19 @@ export async function getServerSideProps(context) {
     }
   }
 
-//   if (!isLoggedIn) {
     visitCount += 1;
 
-    res.setHeader("Set-Cookie", [
-      cookie.serialize("visitData", JSON.stringify({ visitCount, ipAddress }), {
+    res.setHeader('Set-Cookie', [
+        cookie.serialize('visitData', JSON.stringify({ visitCount, ipAddress }), {
         maxAge: 60 * 60 * 24 * 365, // 1 year
-        path: "/",
-      }),
+        path: '/',
+        }),
     ]);
-//   }
 
   // Detect if the request is coming from a Google crawler
   const userAgent = req.headers['user-agent'] || '';
-  const isCrawler = /Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou/.test(userAgent);
+  const isKnownCrawler = /Googlebot|Bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou/.test(userAgent);
+  const isCrawler = !isKnownCrawler && /bot|crawl|spider|scrap|curl|wget|http|python|ruby|php/i.test(userAgent);
 
   return {
     props: { isLoggedIn, visitCount, isCrawler },
